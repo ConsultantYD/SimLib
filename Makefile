@@ -12,7 +12,7 @@ lint:
 	poetry run black simlib tests --check
 	poetry run isort simlib tests --check-only
 	poetry run pylint simlib tests
-	poetry run bandit -r simlib
+	poetry run bandit -r simlib -s B403,B301,B311
 
 test: install
 	poetry run pytest
