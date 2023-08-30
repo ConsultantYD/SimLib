@@ -35,7 +35,9 @@ class Agent:
         time_now = self.modules["time"].get_time_utc()
         config = self.modules["config"].get_agent_config(uid=self.uid)
         controls_power_mapping = config.data.controls_power_mapping
-        history_df = self.modules["data"].get_augmented_history(self.uid, controls_power_mapping)
+        history_df = self.modules["data"].get_augmented_history(
+            self.uid, controls_power_mapping
+        )
 
         # Trajectories simulation
         n_trajectories = 1
@@ -51,7 +53,9 @@ class Agent:
         return None
 
     def get_asset_signals_history(self) -> pd.DataFrame:
-        df: pd.DataFrame = self.modules["data"].get_asset_signal_history(self.uid)
+        df: pd.DataFrame = self.modules["data"].get_asset_signal_history(
+            self.uid
+        )
         return df
 
     def assign_to_asset(self, asset: Any) -> None:
@@ -98,11 +102,15 @@ class Agent:
                 for signal in config.data.tracked_signals
                 if signal is not None
             }
-            self.modules["data"].push_asset_signal_data(self.uid, self.index, signals_dict)
+            self.modules["data"].push_asset_signal_data(
+                self.uid, self.index, signals_dict
+            )
 
-            # The control we sample is actually the one from the previous time step
+            # The control we sample is actually the one from prev time step
             if self.previous_index is not None:
-                control_dict = {CONTROL_KEY: self.asset.get_signal(CONTROL_KEY)}
+                control_dict = {
+                    CONTROL_KEY: self.asset.get_signal(CONTROL_KEY)
+                }
                 self.modules["data"].push_asset_signal_data(
                     self.uid, self.previous_index, control_dict
                 )
@@ -126,8 +134,12 @@ class Agent:
             next_idx = current_idx + dt.timedelta(minutes=5)
             u = int(np.random.randint(1, 4))
             df.loc[current_idx, "control"] = u
-            df = self.modules["prediction"].get_model_prediction(self.uid, df, next_idx)
-            df = self.modules["data"].augment_df_with_all(self.uid, df, controls_power_mapping)
+            df = self.modules["prediction"].get_model_prediction(
+                self.uid, df, next_idx
+            )
+            df = self.modules["data"].augment_df_with_all(
+                self.uid, df, controls_power_mapping
+            )
             current_idx = next_idx
 
         return df

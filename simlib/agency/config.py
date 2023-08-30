@@ -13,7 +13,9 @@ class ConfigModule:
     # AGENT
     # -----------------------------------------------------------------------
     # TODO: Add validation process when pushing new configs
-    def push_new_agent_config(self, uid: Union[str, int], agent_config: AgentConfig) -> None:
+    def push_new_agent_config(
+        self, uid: Union[str, int], agent_config: AgentConfig
+    ) -> None:
         self.agent_configs[uid] = agent_config
 
     def get_agent_config(self, uid: Union[str, int]) -> AgentConfig:

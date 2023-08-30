@@ -13,6 +13,7 @@ pandas-stubs = "^2.0.2.230605"
 dill = "^0.3.7"
 meteostat = "^1.6.5"
 graphviz = "^0.20.1"
+black = "^23.7.0"
 
 
 [build-system]
@@ -37,8 +38,7 @@ flake8 = ">=5.0.0,<6.0.0"
 profile = "black"
 
 [tool.black]
-target-version = ['py37']
-line-length = 100
+line-length = 79
 
 [tool.mypy]
 python_version = "3.10"

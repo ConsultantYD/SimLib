@@ -7,7 +7,9 @@ from simlib.schemas.config import EnergyStorageConfig, EnergyStorageEfficiency
 
 
 @pytest.fixture(scope="module")
-def make_energy_storage() -> Callable[[str, EnergyStorageConfig], EnergyStorage]:
+def make_energy_storage() -> (
+    Callable[[str, EnergyStorageConfig], EnergyStorage]
+):
     def make(
         name: str = "test_energy_storage",
         config: EnergyStorageConfig = EnergyStorageConfig(

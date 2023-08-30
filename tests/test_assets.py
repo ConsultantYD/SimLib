@@ -37,7 +37,9 @@ def test_energy_storage_simulation(
     make_energy_storage: Callable[[str, EnergyStorageConfig], EnergyStorage]
 ) -> None:
     energy_storage = make_energy_storage()  # type: ignore
-    initial_state = EnergyStorageInternalState(timestamp=0, internal_energy=2e6)
+    initial_state = EnergyStorageInternalState(
+        timestamp=0, internal_energy=2e6
+    )
     energy_storage.initialize(initial_state)
     for i in range(1, 4):
         energy_storage.step(timestamp=i, control=DiscreteControl(2))
@@ -50,7 +52,9 @@ def test_energy_storage_save_and_load(
     make_energy_storage: Callable[[str, EnergyStorageConfig], EnergyStorage]
 ) -> None:
     energy_storage = make_energy_storage()  # type: ignore
-    initial_state = EnergyStorageInternalState(timestamp=0, internal_energy=2e6)
+    initial_state = EnergyStorageInternalState(
+        timestamp=0, internal_energy=2e6
+    )
     energy_storage.initialize(initial_state)
     for i in range(1, 4):
         energy_storage.step(timestamp=i, control=DiscreteControl(2))
@@ -69,7 +73,9 @@ def test_energy_storage_historical_data(
     make_energy_storage: Callable[[str, EnergyStorageConfig], EnergyStorage]
 ) -> None:
     energy_storage = make_energy_storage()  # type: ignore
-    initial_state = EnergyStorageInternalState(timestamp=0, internal_energy=2e6)
+    initial_state = EnergyStorageInternalState(
+        timestamp=0, internal_energy=2e6
+    )
     energy_storage.initialize(initial_state)
     for i in range(1, 4):
         energy_storage.step(timestamp=i, control=DiscreteControl(2))

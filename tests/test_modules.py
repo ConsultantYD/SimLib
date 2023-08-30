@@ -13,7 +13,9 @@ def test_weather_ref() -> None:
         start=dt.datetime(2023, 1, 1),
         end=dt.datetime(2023, 1, 2),
     )
-    temp = weather_ref.get_temperature_at_time(dt.datetime(2023, 1, 1, 0, 2, 0))
+    temp = weather_ref.get_temperature_at_time(
+        dt.datetime(2023, 1, 1, 0, 2, 0)
+    )
     assert temp == 6.2
 
 

@@ -11,7 +11,9 @@ from simlib.global_variables import CONTROL_KEY, ENERGY_KEY, POWER_KEY
 
 class DataModule:
     def __init__(self) -> None:
-        self.assets_historical_signal_data: Dict[UidType, Dict[IndexType, SignalType]] = {}
+        self.assets_historical_signal_data: Dict[
+            UidType, Dict[IndexType, SignalType]
+        ] = {}
         self.tariffs: Dict[UidType, Tariff] = {}
 
     def get_augmented_history(
@@ -21,7 +23,8 @@ class DataModule:
 
         Args:
             uid (int): The unique identifier of the asset.
-            power_mapping (Dict[int, float]): A dictionary mapping the controls to power.
+            power_mapping (Dict[int, float]): A dictionary mapping
+                                              the controls to power.
 
         Returns:
             pd.DataFrame: The augmented history of the asset.
@@ -31,10 +34,15 @@ class DataModule:
         return df
 
     def augment_df_with_all(
-        self, uid: Union[str, int], df: pd.DataFrame, controls_power_mapping: Dict[int, float]
+        self,
+        uid: Union[str, int],
+        df: pd.DataFrame,
+        controls_power_mapping: Dict[int, float],
     ) -> pd.DataFrame:
         """Augment the dataframe with all the possible data."""
-        df = self.augment_dataframe_with_virtual_metering_data(df.copy(), controls_power_mapping)
+        df = self.augment_dataframe_with_virtual_metering_data(
+            df.copy(), controls_power_mapping
+        )
         df = self.augment_dataframe_with_tariff(df, uid)
         return df
 
@@ -52,7 +60,9 @@ class DataModule:
         Args:
             uid (Union[int, str]): The unique identifier of the asset.
             index (Union[int, dt.datetime]): The index of the data.
-            signals_dict (Dict[str, Union[float, int, str]]): A dictionary of signals."""
+            signals_dict (Dict[str, Union[float, int, str]]): A dictionary of
+                                                              signals.
+        """
         if uid not in self.assets_historical_signal_data:
             self.assets_historical_signal_data[uid] = {}
 
@@ -99,10 +109,14 @@ class DataModule:
                     time_diff = (
                         df.index.to_series()
                         .diff()
-                        .fillna(pd.Timedelta(seconds=avg_delta.total_seconds()))
+                        .fillna(
+                            pd.Timedelta(seconds=avg_delta.total_seconds())
+                        )
                     )
                 else:
-                    raise ValueError(f"Unknown avg_delta type: {type(avg_delta)}")
+                    raise ValueError(
+                        f"Unknown avg_delta type: {type(avg_delta)}"
+                    )
                 energy = df[POWER_KEY] * time_diff.dt.seconds / 3600
             elif isinstance(df.index, int):
                 time_diff = df.index.to_series().diff().fillna(0)
@@ -120,7 +134,9 @@ class DataModule:
     # --------------------------------------------------------------------------#
     # - TARIFF AND PRICING DATA
     # --------------------------------------------------------------------------#
-    def assign_tariff_structure(self, uid: Union[int, str], tariff: Tariff) -> None:
+    def assign_tariff_structure(
+        self, uid: Union[int, str], tariff: Tariff
+    ) -> None:
         """Assign a tariff to the specified asset.
 
         Args:
@@ -128,7 +144,9 @@ class DataModule:
         """
         self.tariffs[uid] = tariff
 
-    def augment_dataframe_with_tariff(self, df: pd.DataFrame, uid: Union[int, str]) -> pd.DataFrame:
+    def augment_dataframe_with_tariff(
+        self, df: pd.DataFrame, uid: Union[int, str]
+    ) -> pd.DataFrame:
         """Augment the dataframe with tariff information.
 
         Args:
@@ -160,7 +178,9 @@ def tf_cyclic_day(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def tf_1_hot_weekday(df: pd.DataFrame) -> pd.DataFrame:
-    """Adds 7 columns for each day of the week and puts a 1 if it's that day."""
+    """Adds 7 columns for each day of the week, and puts a 1 if it's that
+    day.
+    """
     day_indicator_columns = [
         "tf_mon",
         "tf_tue",
