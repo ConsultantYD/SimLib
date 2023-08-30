@@ -1,6 +1,10 @@
 name: ci-pipeline-v1.0.0
 
-on: [push]
+on:
+  push:
+    branches:
+      - dev
+      - main
 
 jobs:
   build-linux:
@@ -22,9 +26,9 @@ jobs:
       run: |
         pip install poetry
         poetry install
-    - name: Run Linters
+    - name: Run linters
       run: |
         make lint
-    - name: Test with pytest
+    - name: Run tests
       run: |
-        pytest
+        make test
