@@ -1,6 +1,10 @@
 name: ci-pipeline-v1.0.0
 
-on: [push]
+on:
+  push:
+    branches:
+      - dev
+      - main
 
 jobs:
   build-linux:
