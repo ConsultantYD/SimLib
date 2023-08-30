@@ -1,4 +1,5 @@
 # type: ignore
+# flake8: noqa
 from graphviz import Digraph
 
 
@@ -36,9 +37,13 @@ class ScenarioTree:
                     return found_node
         return None
 
-    def insert(self, current_state, action, next_states, rewards, probabilities):
+    def insert(
+        self, current_state, action, next_states, rewards, probabilities
+    ):
         """Inserts possible states and their probabilities for a given action."""
-        if len(next_states) != len(rewards) or len(next_states) != len(probabilities):
+        if len(next_states) != len(rewards) or len(next_states) != len(
+            probabilities
+        ):
             raise ValueError(
                 "next_states, rewards, and probabilities lists should have the same length"
             )
@@ -69,8 +74,12 @@ class ScenarioTree:
 
         for action, children in node.children.items():
             for probability, child in children:
-                adjusted_reward = child.reward * probability  # Weight by probability
-                reward, path = self.optimal_path(child, accumulated_reward + adjusted_reward)
+                adjusted_reward = (
+                    child.reward * probability
+                )  # Weight by probability
+                reward, path = self.optimal_path(
+                    child, accumulated_reward + adjusted_reward
+                )
                 if reward > best_reward:
                     best_reward = reward
                     best_path = [node.state] + path
@@ -115,18 +124,28 @@ class ScenarioTree:
                 dot.node(action_node_name, action, color="black", shape="box")
 
                 # Adjust edge color based on whether the (state, action) pair is part of the optimal path
-                edge_color = "red" if (node.state, action) in optimal_actions else "black"
-                dot.edge(node_name, action_node_name, label="", color=edge_color)
+                edge_color = (
+                    "red"
+                    if (node.state, action) in optimal_actions
+                    else "black"
+                )
+                dot.edge(
+                    node_name, action_node_name, label="", color=edge_color
+                )
 
                 for probability, child in children:
                     child_name = str(id(child))
                     edge_color = (
                         "red"
-                        if node.state in optimal_states and child.state in optimal_states
+                        if node.state in optimal_states
+                        and child.state in optimal_states
                         else "black"
                     )
                     dot.edge(
-                        action_node_name, child_name, label=f"{probability:.2f}", color=edge_color
+                        action_node_name,
+                        child_name,
+                        label=f"{probability:.2f}",
+                        color=edge_color,
                     )
                     add_nodes_edges(child)
 
@@ -143,7 +162,9 @@ class ScenarioTree:
         for action, children in node.children.items():
             for probability, child in children:
                 tree_str = self.__str__(
-                    child, prefix + f"--{action}[{probability:.2f}]-->", tree_str
+                    child,
+                    prefix + f"--{action}[{probability:.2f}]-->",
+                    tree_str,
                 )
 
         return tree_str

@@ -25,7 +25,9 @@ class EnergyStorageEfficiency(BaseSchema):
     value: float = 1.0
 
     @field_validator("value")
-    def check_value(cls, v: float) -> float:  # pylint: disable=no-self-argument
+    def check_value(
+        cls, v: float
+    ) -> float:  # pylint: disable=no-self-argument
         if (
             v > EnergyStorageEfficiencyLimits.UPPER_LIMIT
             or v < EnergyStorageEfficiencyLimits.LOWER_LIMIT
@@ -64,7 +66,9 @@ class AgentDataConfig(BaseSchema):
 
 
 class AgentPredictionConfig(BaseSchema):
-    signal_inputs: Dict[str, int]  # Signal inputs with their history length (0 = t)
+    signal_inputs: Dict[
+        str, int
+    ]  # Signal inputs with their history length (0 = t)
     signal_outputs: List[str]  # Signals output to predict
 
 

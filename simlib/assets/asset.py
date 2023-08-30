@@ -28,7 +28,9 @@ class Asset(metaclass=ABCMeta):
         self.initialized: bool = False
 
         # Initialize history for variables tracked in the simulation
-        tracked_variables = self.config.tracked_variables + self.config.core_variables
+        tracked_variables = (
+            self.config.tracked_variables + self.config.core_variables
+        )
         self.history: Dict[str, List[Any]] = {
             variable_name: [] for variable_name in tracked_variables
         }
@@ -51,7 +53,9 @@ class Asset(metaclass=ABCMeta):
 
     @abstractmethod
     def step(
-        self, control: Union[ContinuousControl, DiscreteControl], timestamp: Union[int, dt.datetime]
+        self,
+        control: Union[ContinuousControl, DiscreteControl],
+        timestamp: Union[int, dt.datetime],
     ) -> Optional[float]:
         """Perform a step in the simulation, given a submitted control.
         This function must return the power consumption of the asset at
@@ -93,7 +97,7 @@ class Asset(metaclass=ABCMeta):
         """Returns a dataframe with all variables tracked in the simulation.
 
         Returns:
-            pd.DataFrame: Dataframe with all variables tracked in the simulation.
+            pd.DataFrame: Dataframe with all variables tracked in simulation.
         """
 
         # Work with a copy of the data to avoid modifying the original
@@ -103,20 +107,25 @@ class Asset(metaclass=ABCMeta):
         if nan_padding:
             max_length = max(len(value) for value in data.values())
             data_clean = {
-                key: value + [None] * (max_length - len(value)) for key, value in data.items()
+                key: value + [None] * (max_length - len(value))
+                for key, value in data.items()
             }
 
         # Remove last timestamps missing control and power data
         else:
             min_length = min(len(value) for value in data.values())
-            data_clean = {key: value[:min_length] for key, value in data.items()}
+            data_clean = {
+                key: value[:min_length] for key, value in data.items()
+            }
 
         # Separate index column and clean data columns to create dataframe
         timestamp_data = data_clean.pop(TIMESTAMP_KEY)
         df = pd.DataFrame(data_clean, index=timestamp_data)
         return df
 
-    def to_json(self, filename: Optional[str] = None, directory: str = "") -> None:
+    def to_json(
+        self, filename: Optional[str] = None, directory: str = ""
+    ) -> None:
         """Save asset's attributes to a JSON file.
 
         Args:
@@ -126,7 +135,13 @@ class Asset(metaclass=ABCMeta):
         filepath = join(directory, filename + ".json")
         with open(filepath, "w", encoding="utf-8") as f:
             attributes = vars(self)
-            json.dump(attributes, f, ensure_ascii=False, indent=4, default=serialize_instance)
+            json.dump(
+                attributes,
+                f,
+                ensure_ascii=False,
+                indent=4,
+                default=serialize_instance,
+            )
 
     @classmethod
     def from_json(cls, filename: str, directory: str = "") -> "Asset":
@@ -157,7 +172,9 @@ class Asset(metaclass=ABCMeta):
         raise NotImplementedError
 
     def _update_tracked_variables(self) -> None:
-        tracked_variables = self.config.tracked_variables + self.config.core_variables
+        tracked_variables = (
+            self.config.tracked_variables + self.config.core_variables
+        )
         for variable_name in tracked_variables:
             variable = getattr(self, variable_name)
             if variable is not None:

@@ -8,7 +8,12 @@ class WeatherRef:
     based on true historical values at a target location."""
 
     def __init__(
-        self, start: dt.datetime, end: dt.datetime, lat: float, lon: float, alt: float = 0
+        self,
+        start: dt.datetime,
+        end: dt.datetime,
+        lat: float,
+        lon: float,
+        alt: float = 0,
     ):
         """Initialise the weather reference, and prepare data based
         on the specified parameters.
@@ -18,7 +23,8 @@ class WeatherRef:
             end (dt.datetime): End of the simulation.
             lat (float): Latitude of the target location.
             lon (float): Longitude of the target location.
-            alt (float, optional): Altitude of the target location. Defaults to 0.
+            alt (float, optional): Altitude of the target location.
+                                   Defaults to 0.
         """
 
         # Fetch historical weather data for specified location

@@ -18,10 +18,7 @@ from simlib.schemas.config import (
     EnergyStorageConfig,
     EnergyStorageEfficiency,
     ModelEvaluationMetrics,
-    SimulationAssetConfig,
-    SimulationGeographicalConfig,
     SimulationGlobalConfig,
-    SimulationTimeConfig,
 )
 from simlib.schemas.state import EnergyStorageInternalState
 
@@ -30,7 +27,9 @@ class EnergyStorageModel(PredictionModel):
     def train(self, historical_signals: pd.DataFrame) -> None:
         pass
 
-    def predict(self, signals_input: pd.DataFrame, new_index: int | dt.datetime) -> pd.DataFrame:
+    def predict(
+        self, signals_input: pd.DataFrame, new_index: int | dt.datetime
+    ) -> pd.DataFrame:
         E = signals_input.loc[signals_input.index[-1], "internal_energy"]
         u: int = signals_input.loc[signals_input.index[-1], "control"]
         power_map = {1: -100000, 2: 0, 3: 100000}
@@ -42,9 +41,13 @@ class EnergyStorageModel(PredictionModel):
 
         return output_df
 
-    def evaluate(self, historical_signals: pd.DataFrame) -> ModelEvaluationMetrics:
+    def evaluate(
+        self, historical_signals: pd.DataFrame
+    ) -> ModelEvaluationMetrics:
         return ModelEvaluationMetrics(
-            root_mean_squared_error=0, mean_absolute_error=0, mean_squared_error=0
+            root_mean_squared_error=0,
+            mean_absolute_error=0,
+            mean_squared_error=0,
         )
 
 
@@ -124,11 +127,14 @@ class Simulation:
 
         n_assets = self.config.assets.n_energy_storages
         self.assets = [
-            EnergyStorage(f"energy_storage_{i}", es_config) for i in range(1, n_assets + 1)
+            EnergyStorage(f"energy_storage_{i}", es_config)
+            for i in range(1, n_assets + 1)
         ]
 
         # Initialize assets with their initial state
-        initial_state = EnergyStorageInternalState(timestamp=self.start_time, internal_energy=2e6)
+        initial_state = EnergyStorageInternalState(
+            timestamp=self.start_time, internal_energy=2e6
+        )
         for energy_storage in self.assets:
             energy_storage.initialize(initial_state)
 
@@ -150,7 +156,9 @@ class Simulation:
 
         # Define each agent's configuration
         for i in range(1, len(self.assets) + 1):
-            self.config_module.push_new_agent_config(uid=i, agent_config=agent_config)
+            self.config_module.push_new_agent_config(
+                uid=i, agent_config=agent_config
+            )
 
         # Create agents
         self.agents = [Agent(i) for i in range(1, len(self.assets) + 1)]
@@ -162,20 +170,7 @@ class Simulation:
             self.modules["data"].assign_tariff_structure(  # type: ignore
                 uid=i + 1, tariff=FlatRateTariff()
             )
-            self.modules["prediction"].assign_model(uid=i + 1, model=model)  # type: ignore
+            self.modules["prediction"].assign_model(  # type: ignore
+                uid=i + 1, model=model
+            )
             agent.update_modules_references(self.modules)
-
-
-if __name__ == "__main__":
-    sim_config = SimulationGlobalConfig(
-        time=SimulationTimeConfig(
-            start_time="2023-01-01 00:00:00", end_time="2023-01-01 02:00:00", step_size_s=300
-        ),
-        geography=SimulationGeographicalConfig(
-            location_lat=43.6532, location_lon=-79.3832, location_alt=76
-        ),
-        assets=SimulationAssetConfig(n_energy_storages=1),
-    )
-
-    simulation = Simulation(sim_config)
-    simulation.run()

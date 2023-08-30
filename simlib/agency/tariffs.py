@@ -63,10 +63,16 @@ class HydroQuebecDTariff(Tariff):
     ) -> Optional[float]:
         if energy is not None:
             period_energy = (
-                0 if "period_energy" not in other_info.keys() else other_info["period_energy"]
+                0
+                if "period_energy" not in other_info.keys()
+                else other_info["period_energy"]
             )
-            low_consumption_energy = min(self.cuttoff_energy_value, period_energy)
-            high_consumption_energy = max(energy - self.cuttoff_energy_value, 0)
+            low_consumption_energy = min(
+                self.cuttoff_energy_value, period_energy
+            )
+            high_consumption_energy = max(
+                energy - self.cuttoff_energy_value, 0
+            )
             price = float(
                 low_consumption_energy * self.patrimonial_value
                 + high_consumption_energy * self.highest_value
@@ -86,7 +92,10 @@ class OntarioTOUTariff(Tariff):
         mid_peak: float = 0.102,
         off_peak: float = 0.074,
         on_peak_range: Tuple[int, int] = (17, 19),
-        mid_peak_ranges: Tuple[Tuple[int, int], Tuple[int, int]] = ((7, 11), (17, 19)),
+        mid_peak_ranges: Tuple[Tuple[int, int], Tuple[int, int]] = (
+            (7, 11),
+            (17, 19),
+        ),
     ):
         self.on_peak = on_peak
         self.mid_peak = mid_peak
@@ -109,7 +118,9 @@ class OntarioTOUTariff(Tariff):
                 return self.on_peak * energy / 1000  #
             if (
                 self.mid_peak_ranges[0][1] > hour >= self.mid_peak_ranges[0][0]
-                or self.mid_peak_ranges[1][1] > hour >= self.mid_peak_ranges[1][0]
+                or self.mid_peak_ranges[1][1]
+                > hour
+                >= self.mid_peak_ranges[1][0]
             ):
                 return self.mid_peak * energy / 1000
             return self.off_peak * energy / 1000

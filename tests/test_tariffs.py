@@ -14,4 +14,8 @@ def test_flat_rate_tariff() -> None:
     assert price == 0.8
 
     df_updated = tariff.calculate_price_vector(df)
-    assert pytest.approx(df_updated[TARIFF_KEY].values.tolist()) == [0.1, 0.2, 0.3]
+    assert pytest.approx(df_updated[TARIFF_KEY].values.tolist()) == [
+        0.1,
+        0.2,
+        0.3,
+    ]
