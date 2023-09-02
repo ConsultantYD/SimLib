@@ -1,0 +1,3 @@
+class ControlModule:
+    def __init__(self) -> None:
+        ...

@@ -5,6 +5,7 @@ from simlib.schemas.config import (
     SimulationTimeConfig,
 )
 from simlib.simulation import Simulation
+import datetime as dt
 
 if __name__ == "__main__":
     sim_config = SimulationGlobalConfig(
@@ -21,3 +22,10 @@ if __name__ == "__main__":
 
     simulation = Simulation(sim_config)
     simulation.run()
+
+    asset_df = simulation.data_module.get_asset_signal_history(1)
+    trajectories = simulation.data_module.get_trajectory_data(
+        1, dt.datetime(2023, 1, 1, 0, 0, 0)
+    )
+    for trajectory in trajectories:
+        print(trajectory)

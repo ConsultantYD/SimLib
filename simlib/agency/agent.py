@@ -1,6 +1,6 @@
 import datetime as dt
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union
 
 import dill  # type: ignore
 import numpy as np
@@ -28,26 +28,45 @@ class Agent:
         self.previous_index = None
         self.trajectories_list: List[pd.DataFrame] = []
 
-    def run(self) -> None:
+    def data_collection(self) -> None:
         self.sample_asset_signals()
 
+    def policy_evaluation(self) -> None:
         # Initialize important variables
         time_now = self.modules["time"].get_time_utc()
+        data_module = self.modules["data"]
         config = self.modules["config"].get_agent_config(uid=self.uid)
         controls_power_mapping = config.data.controls_power_mapping
-        history_df = self.modules["data"].get_augmented_history(
+        history_df = data_module.get_augmented_history(
             self.uid, controls_power_mapping
         )
 
         # Trajectories simulation
-        n_trajectories = 1
+        n_trajectories = config.control.n_trajectory_samples
         trajectory_len = config.control.trajectory_length
-        self.trajectories_list = []
+        random_policy = lambda df: np.random.choice([1, 2, 3])  # noqa: E731
         for _ in range(n_trajectories):
             trajectory = self._sample_trajectory(
-                history_df, controls_power_mapping, trajectory_len, time_now
+                history_df,
+                controls_power_mapping,
+                trajectory_len,
+                time_now,
+                random_policy,
             )
-            self.trajectories_list.append(trajectory)
+            # Keep only from t to t+trajectory_len
+            trajectory = trajectory.loc[trajectory.index >= time_now, :]
+
+            # Calculate reward based on active products
+            trajectory_with_reward = (
+                data_module.augment_dataframe_with_product_rewards(
+                    trajectory, self.uid
+                )
+            )
+
+            # Save specific trajectory
+            data_module.push_trajectory_data(
+                self.uid, time_now, trajectory_with_reward
+            )
 
     def get_controls(self) -> Any:
         return None
@@ -124,6 +143,7 @@ class Agent:
         controls_power_mapping: Dict[int, float],
         trajectory_len: int,
         time_now: dt.datetime,
+        policy: Callable[[pd.DataFrame], int],
     ) -> pd.DataFrame:
         # Work with a copy of the input dataframe
         df = history_df.copy()
@@ -132,7 +152,7 @@ class Agent:
         current_idx = time_now
         for _ in range(trajectory_len):
             next_idx = current_idx + dt.timedelta(minutes=5)
-            u = int(np.random.randint(1, 4))
+            u = policy(df)
             df.loc[current_idx, "control"] = u
             df = self.modules["prediction"].get_model_prediction(
                 self.uid, df, next_idx

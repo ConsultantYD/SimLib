@@ -1,9 +1,10 @@
 import datetime as dt
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
 
+from simlib.agency.products import Product
 from simlib.agency.tariffs import Tariff
 from simlib.custom_typing import IndexType, SignalType, UidType
 from simlib.global_variables import CONTROL_KEY, ENERGY_KEY, POWER_KEY
@@ -14,10 +15,17 @@ class DataModule:
         self.assets_historical_signal_data: Dict[
             UidType, Dict[IndexType, SignalType]
         ] = {}
+
+        self.products: Dict[UidType, List[Product]] = {}
+
         self.tariffs: Dict[UidType, Tariff] = {}
 
+        self.trajectory_data: Dict[
+            UidType, Dict[IndexType, List[pd.DataFrame]]
+        ] = {}
+
     def get_augmented_history(
-        self, uid: Union[str, int], controls_power_mapping: Dict[int, float]
+        self, uid: UidType, controls_power_mapping: Dict[int, float]
     ) -> pd.DataFrame:
         """Get the augmented history of the asset.
 
@@ -35,7 +43,7 @@ class DataModule:
 
     def augment_df_with_all(
         self,
-        uid: Union[str, int],
+        uid: UidType,
         df: pd.DataFrame,
         controls_power_mapping: Dict[int, float],
     ) -> pd.DataFrame:
@@ -51,7 +59,7 @@ class DataModule:
     # --------------------------------------------------------------------------#
     def push_asset_signal_data(
         self,
-        uid: Union[int, str],
+        uid: UidType,
         index: Union[int, dt.datetime],
         signals_dict: Dict[str, Union[float, int, str]],
     ) -> None:
@@ -73,7 +81,7 @@ class DataModule:
             self.assets_historical_signal_data[uid][index] = signals_dict
         return None
 
-    def get_asset_signal_history(self, uid: Union[int, str]) -> pd.DataFrame:
+    def get_asset_signal_history(self, uid: UidType) -> pd.DataFrame:
         data = self.assets_historical_signal_data[uid]
         df = pd.DataFrame.from_dict(data, orient="index")
 
@@ -134,9 +142,7 @@ class DataModule:
     # --------------------------------------------------------------------------#
     # - TARIFF AND PRICING DATA
     # --------------------------------------------------------------------------#
-    def assign_tariff_structure(
-        self, uid: Union[int, str], tariff: Tariff
-    ) -> None:
+    def assign_tariff_structure(self, uid: UidType, tariff: Tariff) -> None:
         """Assign a tariff to the specified asset.
 
         Args:
@@ -145,7 +151,7 @@ class DataModule:
         self.tariffs[uid] = tariff
 
     def augment_dataframe_with_tariff(
-        self, df: pd.DataFrame, uid: Union[int, str]
+        self, df: pd.DataFrame, uid: UidType
     ) -> pd.DataFrame:
         """Augment the dataframe with tariff information.
 
@@ -159,6 +165,101 @@ class DataModule:
         tariff = self.tariffs[uid]
         df = tariff.calculate_price_vector(df.copy())
         return df
+
+    # --------------------------------------------------------------------------#
+    # - PRODUCT DATA
+    # --------------------------------------------------------------------------#
+
+    def augment_dataframe_with_product_rewards(
+        self, df: pd.DataFrame, uid: UidType
+    ) -> pd.DataFrame:
+        """Augment the dataframe with product reward information.
+
+        Args:
+            df (pd.DataFrame): The dataframe to augment.
+            uid (Union[int, str]): The unique identifier of the agent.
+
+        Returns:
+            pd.DataFrame: The augmented dataframe.
+        """
+        products = self.get_products(uid)
+        if products is not None:
+            for product in products:
+                df[product.get_reward_name()] = product.calculate_reward(df)
+        return df
+
+    def assign_product(self, uid: UidType, product: Product) -> None:
+        """Adds a product to the specified asset.
+
+        Args:
+            product (Product): The product object to add to this instance.
+        """
+        if uid not in self.products:
+            self.products[uid] = []
+        self.products[uid].append(product)
+
+    def get_products(self, uid: UidType) -> List[Product] | None:
+        if uid in self.products:
+            return self.products[uid]
+        return None
+
+    def remove_product(self, uid: UidType, product: Product) -> None:
+        """Removes a specific product from the asset.
+
+        Args:
+            uid (Union[int, str]): The unique identifier of the agent.
+            product (Product): The product object to remove from this instance.
+        """
+        for product in self.products[uid]:
+            if isinstance(product, product.__class__):
+                self.products[uid].remove(product)
+
+    # --------------------------------------------------------------------------#
+    # - TRAJECTORY DATA
+    # --------------------------------------------------------------------------#
+    def push_trajectory_data(
+        self,
+        uid: UidType,
+        index: Union[int, dt.datetime],
+        trajectory: pd.DataFrame,
+    ) -> None:
+        """Pushes a dataframe of simulated data from an asset observation.
+
+        Args:
+            uid (Union[int, str]): The unique identifier of the asset.
+            index (Union[int, dt.datetime]): The index of the data.
+            signals_dict (Dict[str, Union[float, int, str]]): A dictionary of
+                                                              signals.
+        """
+        if uid not in self.trajectory_data:
+            self.trajectory_data[uid] = {}
+
+        # If the index already exists, update the data, else assign to it
+        if index in self.trajectory_data[uid].keys():
+            self.trajectory_data[uid][index].append(trajectory)
+        else:
+            self.trajectory_data[uid][index] = [trajectory]
+        return None
+
+    def get_trajectory_data(
+        self, uid: UidType, index: IndexType
+    ) -> List[pd.DataFrame] | None:
+        """Returns the simulated trajectory data for the specified asset,
+        for a given index.
+
+        Args:
+            uid (Union[int, str]): The unique identifier of the asset.
+            index (IndexType): The index of the data.
+
+        Returns:
+            List[pd.DataFrame] | None: The simulated trajectory data.
+        """
+        # If the index is present, return data, else return None
+        if uid in self.trajectory_data.keys():
+            data = self.trajectory_data[uid]
+            if index in data.keys():
+                return data[index]
+        return None
 
 
 def tf_all_cyclic(df: pd.DataFrame) -> pd.DataFrame:
