@@ -6,6 +6,7 @@ from simlib.agency.agent import Agent
 from simlib.agency.config import ConfigModule
 from simlib.agency.data import DataModule
 from simlib.agency.prediction import PredictionModel, PredictionModule
+from simlib.agency.products import DemandResponseProduct
 from simlib.agency.tariffs import FlatRateTariff
 from simlib.agency.time import TimeModule
 from simlib.agency.weather import WeatherRef
@@ -73,11 +74,12 @@ class Simulation:
 
     def run(self) -> None:
         # Simulation time loop
-        while self.time_module.get_time_utc() < self.end_time:
+        while self.time_module.get_time_utc() <= self.end_time:
             # NOTE: The order is important - Agents, assets then time
             # Run agents
             for agent in self.agents:
-                agent.run()
+                agent.data_collection()
+                agent.policy_evaluation()
 
             # Update assets
             for asset in self.assets:
@@ -169,6 +171,9 @@ class Simulation:
             agent.assign_to_asset(self.assets[i])
             self.modules["data"].assign_tariff_structure(  # type: ignore
                 uid=i + 1, tariff=FlatRateTariff()
+            )
+            self.modules["data"].assign_product(  # type: ignore
+                uid=i + 1, product=DemandResponseProduct()
             )
             self.modules["prediction"].assign_model(  # type: ignore
                 uid=i + 1, model=model

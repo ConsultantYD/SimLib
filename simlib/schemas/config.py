@@ -74,6 +74,7 @@ class AgentPredictionConfig(BaseSchema):
 
 class AgentControlConfig(BaseSchema):
     trajectory_length: int = 6
+    n_trajectory_samples: int = 1
 
 
 class AgentConfig(BaseSchema):

@@ -14,6 +14,7 @@ dill = "^0.3.7"
 meteostat = "^1.6.5"
 graphviz = "^0.20.1"
 black = "^23.7.0"
+plotly = "^5.16.1"
 
 
 [build-system]
